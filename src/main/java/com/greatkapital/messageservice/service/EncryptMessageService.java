@@ -36,13 +36,12 @@ public class EncryptMessageService {
             LOGGER.error("Invalid input: message cannot be null");
             throw new IllegalArgumentException("Message cannot be null");
         }
-
-        RestTemplate restTemplate = new RestTemplate();
-        String encryptionServiceUrl = "http://localhost:8081/api/encrypt";
-        ResponseEntity<Map> encryptionServiceResponse = restTemplate.postForEntity(encryptionServiceUrl, messageRequestPOJO, Map.class);
-        messageRequestPOJO.setEncryptedMessage(Objects.requireNonNull(encryptionServiceResponse.getBody()).get("encryptedMessage").toString());
         Map<String, String> responseMap;
         try {
+            RestTemplate restTemplate = new RestTemplate();
+            String encryptionServiceUrl = "http://localhost:8081/api/encrypt";
+            ResponseEntity<Map> encryptionServiceResponse = restTemplate.postForEntity(encryptionServiceUrl, messageRequestPOJO, Map.class);
+            messageRequestPOJO.setEncryptedMessage(Objects.requireNonNull(encryptionServiceResponse.getBody()).get("encryptedMessage").toString());
             encryptMessageDAO.addMessage(messageRequestPOJO);
             responseMap = new LinkedHashMap<>();
             responseMap.put("status", "success");
