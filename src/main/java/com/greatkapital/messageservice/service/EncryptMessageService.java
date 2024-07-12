@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -38,7 +39,7 @@ public class EncryptMessageService {
         Map<String, String> responseMap;
         try {
             encryptMessageDAO.addMessage(messageRequestPOJO);
-            responseMap = new HashMap<>();
+            responseMap = new LinkedHashMap<>();
             responseMap.put("status", "success");
             responseMap.put("encryptedMessage", messageRequestPOJO.getEncryptedMessage());
         } catch (Exception e) {
