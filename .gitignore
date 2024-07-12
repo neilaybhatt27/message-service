@@ -20,6 +20,9 @@ mvnw.cmd
 ### log files
 logs/
 
+### environment variable file
+env.properties
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
