@@ -5,9 +5,10 @@ import com.greatkapital.messageservice.model.MessageRequestPOJO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +37,10 @@ public class EncryptMessageService {
             throw new IllegalArgumentException("Message cannot be null");
         }
 
+        RestTemplate restTemplate = new RestTemplate();
+        String encryptionServiceUrl = "http://localhost:8081/api/encrypt";
+        ResponseEntity<Map> encryptionServiceResponse = restTemplate.postForEntity(encryptionServiceUrl, messageRequestPOJO, Map.class);
+        messageRequestPOJO.setEncryptedMessage(Objects.requireNonNull(encryptionServiceResponse.getBody()).get("encryptedMessage").toString());
         Map<String, String> responseMap;
         try {
             encryptMessageDAO.addMessage(messageRequestPOJO);
