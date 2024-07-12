@@ -1,5 +1,6 @@
 package com.greatkapital.messageservice.controller;
 
+import com.greatkapital.messageservice.model.EncryptedMessageResponsePOJO;
 import com.greatkapital.messageservice.model.MessageRequestPOJO;
 import com.greatkapital.messageservice.service.EncryptMessageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,10 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -59,12 +57,50 @@ public class EncryptMessageController {
     })
 
     @PostMapping(path = "/message")
-    public ResponseEntity<Object> encryptAndAddMessage(@RequestBody MessageRequestPOJO messageRequestPOJO) {
+    public ResponseEntity<Map<String, String>> encryptAndAddMessage(@RequestBody MessageRequestPOJO messageRequestPOJO) {
         LOGGER.info("IN EncryptMessageController.encryptAndAddMessage with MessageRequestPOJO: {}", messageRequestPOJO);
-        ResponseEntity<Object> response;
+        ResponseEntity<Map<String, String>> response;
         Map<String, String> responseMap = encryptMessageService.encryptAndAddMessage(messageRequestPOJO);
         response = ResponseEntity.ok(responseMap);
         LOGGER.info("OUT EncryptMessageController.encryptAndAddMessage");
+        return response;
+    }
+
+    /**
+     * This GET API fetches the encrypted message of the given message id.
+     *
+     * @param messageId id of the message that is to be fetched.
+     * @return ResponseEntity object containing the response body.
+     */
+
+    @Operation(summary = "fetch the encrypted message by id from the database.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Fetch successful",
+                    content = {@Content(mediaType = "application/json",
+                            examples = {@ExampleObject(value = """
+                            {
+                                "messageId": "1",
+                                "encryptedMessage": "XSu2r4IUA54sdyDRcl3nAQ=="
+                            }
+                            """)})}),
+            @ApiResponse(responseCode = "422",
+                    description = "Invalid input",
+                    content = {@Content(mediaType = "application/json",
+                            examples = {@ExampleObject(value = """
+                            {
+                                "errorObject": "Invalid input: wrong message id"
+                            }
+                            """)})})
+    })
+
+    @GetMapping(path = "/message/{messageId}")
+    public ResponseEntity<EncryptedMessageResponsePOJO> getEncryptedMessageById(@PathVariable long messageId) {
+        LOGGER.info("IN EncryptMessageController.getEncryptedMessageById with messageId: {}", messageId);
+        ResponseEntity<EncryptedMessageResponsePOJO> response;
+        EncryptedMessageResponsePOJO encryptedMessageResponsePOJO = encryptMessageService.getEncryptedMessageById(messageId);
+        response = ResponseEntity.ok(encryptedMessageResponsePOJO);
+        LOGGER.info("OUT EncryptMessageController.getEncryptedMessageById");
         return response;
     }
 }

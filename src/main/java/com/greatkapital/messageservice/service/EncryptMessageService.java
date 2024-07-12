@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -63,22 +64,26 @@ public class EncryptMessageService {
      */
     public EncryptedMessageResponsePOJO getEncryptedMessageById(long messageId) {
         LOGGER.info("IN EncryptMessageService.getEncryptedMessageById with messageId: {}", messageId);
-        if(messageId <= 0) {
-            LOGGER.error("Invalid input: message id cannot be 0 or negative");
-            throw new IllegalArgumentException("Invalid input: message id cannot be 0 or negative");
-        }
         EncryptedMessageResponsePOJO encryptedMessageResponsePOJO;
         try {
-            if(!encryptMessageDAO.isMessageIdValid(messageId)) {
-                LOGGER.error("Invalid input: message id does not exist");
-                throw new IllegalArgumentException("Invalid input: message id does not exist");
-            }
+            validateMessageId(messageId);
             encryptedMessageResponsePOJO = encryptMessageDAO.getEncryptedMessageById(messageId);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             LOGGER.error("Some error occurred in the server! Error: {}, Error Stack Trace: {}", e.getMessage(), e.getStackTrace());
             throw new RuntimeException("Some error occurred in the server!");
         }
         LOGGER.info("OUT EncryptMessageService.getEncryptedMessageById successfully.");
         return encryptedMessageResponsePOJO;
+    }
+
+    private void validateMessageId(long messageId) throws SQLException {
+        if(messageId <= 0) {
+            LOGGER.error("Invalid input: message id cannot be 0 or negative");
+            throw new IllegalArgumentException("Invalid input: message id cannot be 0 or negative");
+        }
+        if(!encryptMessageDAO.isMessageIdValid(messageId)) {
+            LOGGER.error("Invalid input: message id does not exist");
+            throw new IllegalArgumentException("Invalid input: message id does not exist");
+        }
     }
 }
