@@ -1,6 +1,7 @@
 package com.greatkapital.messageservice.service;
 
 import com.greatkapital.messageservice.dao.EncryptMessageDAO;
+import com.greatkapital.messageservice.model.EncryptedMessageResponsePOJO;
 import com.greatkapital.messageservice.model.MessageRequestPOJO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -52,5 +54,36 @@ public class EncryptMessageService {
         }
         LOGGER.info("OUT EncryptMessageService.encryptAndAddMessage successfully.");
         return responseMap;
+    }
+
+    /**
+     * This service method validates the input message id and retrieves the encrypted message.
+     *
+     * @param messageId id of the message that is to be fetched.
+     * @return EncryptedMessageResponsePOJO object containing the encrypted message and its id.
+     */
+    public EncryptedMessageResponsePOJO getEncryptedMessageById(long messageId) {
+        LOGGER.info("IN EncryptMessageService.getEncryptedMessageById with messageId: {}", messageId);
+        EncryptedMessageResponsePOJO encryptedMessageResponsePOJO;
+        try {
+            validateMessageId(messageId);
+            encryptedMessageResponsePOJO = encryptMessageDAO.getEncryptedMessageById(messageId);
+        } catch (SQLException e) {
+            LOGGER.error("Some error occurred in the server! Error: {}, Error Stack Trace: {}", e.getMessage(), e.getStackTrace());
+            throw new RuntimeException("Some error occurred in the server!");
+        }
+        LOGGER.info("OUT EncryptMessageService.getEncryptedMessageById successfully.");
+        return encryptedMessageResponsePOJO;
+    }
+
+    private void validateMessageId(long messageId) throws SQLException {
+        if(messageId <= 0) {
+            LOGGER.error("Invalid input: message id cannot be 0 or negative");
+            throw new IllegalArgumentException("Invalid input: message id cannot be 0 or negative");
+        }
+        if(!encryptMessageDAO.isMessageIdValid(messageId)) {
+            LOGGER.error("Invalid input: message id does not exist");
+            throw new IllegalArgumentException("Invalid input: message id does not exist");
+        }
     }
 }
